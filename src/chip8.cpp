@@ -1,6 +1,7 @@
 #include "chip8.h"
 #include <fstream>
-
+#include <cstring>
+#include <cstdint>
 
 
 Chip8::Chip8()
@@ -43,18 +44,23 @@ Chip8::Chip8()
 
 
 void Chip8::LoadROM(const char* filename){
-//OPen file in binary mode
+//Open file in binary mode
+    std::ifstream file(filename, std::ios::binary);
 
 // get the file size
-
+    file.seekg(0, std::ios::end); // this line takes us to the end of the file
+    int size = file.tellg();
+    file.seekg(0,std::ios::beg);
 //create the buffer
+    char* buff = new char[size];
+
+
 //read the file to the buffer
-
-//save the buffer into memory
-
+    file.read(buff, size);
 //close file
-
+    file.close();
 //delete the buffer
+    delete buff;
 }
 
 void Chip8::Cycle(){
@@ -65,4 +71,90 @@ void Chip8::Cycle(){
 //EXECUTE OPCODE
 
 
+}
+
+
+
+
+//INSTRUCTION IMPLEMENTATIONS
+
+void Chip8::Opcode_00E0(){ // Clear Display
+    memset(display, 0, sizeof(display)); // this function is used to fill the entire array with any value you want. In our case, we fill the display with zeroes to clear the display
+}
+
+void Chip8::Opcode_00EE(){ //Return from subroutine
+    pc = stack[--sp]; // since the stack pointer always points at a value of 0x000, the top of the stack is actually stored 1 idx before the stack pointer. We need to decrement the stack and then return the new value to pc, which is why I did --sp instead of sp--. sp-- returns the old value and then decrements sp.
+}
+
+void Chip8::Opcode_1nnn(){ // JUMP to the address at 0x0nnn
+    pc = opcode & 0x0FFF; // we use bitmasking herre to remove the top 4 bits and keep the bottom 12 which contain the info we want on the address.
+}
+
+void Chip8::Opcode_2nnn(){ // CALL a subroutined at 0x0nnn
+    stack[sp] = pc; //the pc should be incremented before calling this function so that we're pointing to the correct location on the stack. Otherwise, we'd create an infinite loop.
+    sp++;
+    pc = opcode & 0x0FFF;
+}
+
+void Chip8::Opcode_3xkk(){ //SKIP next instruction if Vx == kk
+    uint8_t Vx = (opcode & 0x0F00) >> 8; // here, we're keeping bits 8-11 and shifting them all the way to the right so we can use them as an index position to access the correct register.
+    uint8_t byte = opcode & 0x00FF;
+
+    if (registers[Vx] == byte){
+        pc+= 2; // since instructions are 2 bytes long, we have to increment by 2
+    }
+}
+
+void Chip8::Opcode_4xkk(){ // SKIP next instruction if Vx != kk
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t byte = opcode & 0x00FF;
+
+    if (registers[Vx] != byte){
+        pc+=2;
+    }
+}
+
+void Chip8::Opcode_5xy0(){ // SKIP next instruction if Vx == Vy
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t Vy = (opcode & 0x00F0) >> 4;
+
+    if (registers[Vx] != registers[Vy]){
+        pc+= 2;
+    }
+}
+
+void Chip8::Opcode_6xkk(){ // LOAD byte kk into Vx
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t byte = opcode & 0x00FF;
+    
+    registers[Vx] = byte;
+}
+
+void Chip8::Opcode_7xkk(){ // INCREMENT Vx by byte kk.
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t byte = opcode & 0x00FF;
+    
+    registers[Vx] += byte;
+    
+}
+
+void Chip8::Opcode_8xy0(){ //SET Vx = Vy
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t Vy = (opcode & 0x00F0) >> 4;
+    
+    registers[Vx] = registers[Vy];
+}
+
+void Chip8::Opcode_8xy1(){ //SET Vx = Vx (bitwise OR) Vy
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t Vy = (opcode & 0x00F0) >> 4;
+
+    registers[Vx] = registers[Vx] | registers[Vy];
+}
+
+void Chip8::Opcode_8xy2(){
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t Vy = (opcode & 0x00F0) >> 4;
+
+    registers[Vx] = registers[Vx] & registers[Vy];
 }

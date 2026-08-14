@@ -10,6 +10,44 @@ class Chip8{
         void LoadROM(char const* filename);
         void Cycle(); // emulation cycle
 
+
+        // Opcode Functions
+        void Opcode_00E0();
+        void Opcode_00EE();
+        void Opcode_1nnn();
+        void Opcode_2nnn();
+        void Opcode_3xkk();
+        void Opcode_4xkk();
+        void Opcode_5xy0();
+        void Opcode_6xkk();
+        void Opcode_7xkk();
+        void Opcode_8xy0();
+        void Opcode_8xy1();
+        void Opcode_8xy2();
+        void Opcode_8xy3();
+        void Opcode_8xy4();
+        void Opcode_8xy5();
+        void Opcode_8xy6();
+        void Opcode_8xy7();
+        void Opcode_8xyE();
+        void Opcode_9xy0();
+        void Opcode_Annn();
+        void Opcode_Bnnn();
+        void Opcode_Cxkk();
+        void Opcode_Dxyn();
+        void Opcode_Ex9E();
+        void Opcode_EXA1();
+        void Opcode_Fx07();
+        void Opcode_Fx0A();
+        void Opcode_Fx15();
+        void Opcode_Fx18();
+        void Opcode_FX1E();
+        void Opcode_Fx29();
+        void Opcode_Fx33();
+        void Opcode_Fx55();
+        void Opcode_Fx65();
+        
+
         //CHIP8 Emulator Components 
         uint8_t registers [16]{}; //the curly braces at the end initializes all the values in the array to zero
         uint8_t memory [4096]{}; //uint8_t means "unsigned int of 8 bits; the _t is just convention to clarify we're referring to a type name, not a variable name."
