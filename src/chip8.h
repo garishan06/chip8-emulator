@@ -2,7 +2,8 @@
 #define CHIP8_H
 
 #include <cstdint>
-
+#include <chrono>
+#include <random> // for RNG stuff
 class Chip8{
     public:
         Chip8();
@@ -15,12 +16,17 @@ class Chip8{
         uint16_t ir{}; //index register
         uint16_t pc{}; // program counter
         uint16_t stack [16]{};
-        uint8_t sp {}; //stack pointer
+        uint8_t sp {}; //stack pointer; it should start at idx 0 since the stack should initially be empty.
+
         uint8_t delayTimer{};
         uint8_t soundTimer{};
         uint8_t keypad[16]{};
         uint32_t display [64*32]{};
         uint16_t opcode;
+
+        //RNG Variables
+        std::default_random_engine randGen;
+	    std::uniform_int_distribution<uint8_t> randByte;
 
 
 
