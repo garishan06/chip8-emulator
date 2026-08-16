@@ -158,3 +158,153 @@ void Chip8::Opcode_8xy2(){
 
     registers[Vx] = registers[Vx] & registers[Vy];
 }
+
+void Chip8::Opcode_8xy3(){
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t Vy = (opcode & 0x00F0) >> 4;
+
+    registers[Vx] = registers[Vx] ^ registers[Vy];
+
+}
+
+void Chip8::Opcode_8xy4(){
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t Vy = (opcode & 0x00F0) >> 4;
+
+    uint16_t sum = registers[Vx] + registers[Vy];
+
+    registers[15] = (sum > 0xFF); // we don't need the ternary statement like we use below because in C++, true converts to 1 and false evaluates as a 0.
+    registers[Vx] = (sum > 0xFF) ? (sum & 0x00FF) : sum; // if its bigger than 0xFF, that means the sum would be longer than 8 bits. We only want to store the bottom 8 bits in Vx.
+
+}
+
+void Chip8::Opcode_8xy5(){
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t Vy = (opcode & 0x00F0) >> 4;
+
+    registers[15] = (registers[Vx] > registers[Vy]);
+    registers[Vx] -= registers[Vy];
+}
+
+void Chip8::Opcode_8xy6(){
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    registers[15] = registers[Vx] & 0x01; // we must save the old LSB before it falls off when we shift to the right.
+
+    registers[Vx] /= 2; // a bit shift in the right direction meanns we have to divide by 2, which makes sense because a bit shifting to the right should make the resulting number smaller.
+}
+
+void Chip8::Opcode_8xy7(){
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t Vy = (opcode & 0x00F0) >> 4;
+
+    registers[15] = (registers[Vy] > registers[Vx]);
+    registers[Vx] = registers[Vy] - registers[Vx];
+}
+
+void Chip8::Opcode_8xyE(){
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    registers[15] = (registers[Vx] & 0x80) >> 7;
+
+    registers[Vx] = registers[Vx]  << 1; 
+}
+
+void Chip8::Opcode_9xy0(){
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t Vy = (opcode & 0x00F0) >> 4;
+
+    if (registers[Vx] != registers[Vy]){
+        pc+=2;
+    }
+}
+
+void Chip8::Opcode_Annn(){
+    ir = opcode & 0x0FFF;
+}
+
+void Chip8::Opcode_Bnnn(){
+    pc = registers[0] + (opcode & 0x0FFF);
+}
+
+void Chip8::Opcode_Cxkk(){
+    uint8_t byte = opcode & 0x00FF;
+    uint8_t random = randByte(randGen);
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+
+    registers[Vx] = random & byte;
+
+}
+
+void Chip8::Opcode_Dxyn(){
+
+}
+
+void Chip8::Opcode_Ex9E(){
+
+}
+
+void Chip8::Opcode_EXA1(){
+
+}
+
+void Chip8::Opcode_Fx07(){
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+
+    registers[Vx] = delayTimer;
+}
+
+void Chip8::Opcode_Fx0A(){
+
+}
+
+void Chip8::Opcode_Fx15(){
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    
+    delayTimer = registers[Vx];
+
+}
+
+void Chip8::Opcode_Fx18(){
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    soundTimer = registers[Vx];
+
+}
+
+void Chip8::Opcode_FX1E(){
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+
+    ir += registers[Vx];
+}
+
+void Chip8::Opcode_Fx29(){
+
+}
+
+void Chip8::Opcode_Fx33(){
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    
+    uint8_t num = registers[Vx]; // here, I chose to use a seperate variable instead of directly calling registers[Vx] to prevent changing the value of whats stored in the register.
+
+    memory[ir + 2] = num % 10; // saving the 1s digit
+    num /=10;
+    memory[ir + 1] = num % 10; //saving the 10s digit
+    num /= 10;
+    memory [ir] = num % 10;    // saving the 100s digit
+}
+
+void Chip8::Opcode_Fx55(){
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    
+    for (int y = 0; y <= Vx; y++){
+        memory[ir + y] = registers[y];
+    }
+}
+
+void Chip8::Opcode_Fx65(){
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    
+    for (int y = 0; y <= Vx; y++){
+        registers[y] = memory [ir + y];
+    }
+}
+
+
