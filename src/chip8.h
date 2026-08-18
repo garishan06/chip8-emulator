@@ -46,6 +46,7 @@ class Chip8{
         void Opcode_Fx33();
         void Opcode_Fx55();
         void Opcode_Fx65();
+        void Opcode_NULL();
         
 
         //CHIP8 Emulator Components 
@@ -65,6 +66,16 @@ class Chip8{
         //RNG Variables
         std::default_random_engine randGen;
 	    std::uniform_int_distribution<uint8_t> randByte;
+
+
+        //Function Pointer Table Variables
+        typedef void (Chip8::* Chip8FuncPtr)();
+
+        Chip8FuncPtr table[16]; // the main table indexed by the first nibble of the opcode
+        Chip8FuncPtr table0[0xE + 1]; //subtable for opcodes starting in 0x0
+        Chip8FuncPtr table8[0xE + 1]; //subtable for opcodes starting in 0x8
+        Chip8FuncPtr tableE[0xE + 1]; //sub table for opcodes starting in 0xE
+        Chip8FuncPtr tableF[0x65 + 1]; // substalbe for opcodes starting in 0xF
 
 
 
