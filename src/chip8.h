@@ -47,6 +47,8 @@ class Chip8{
         void Opcode_Fx55();
         void Opcode_Fx65();
         void Opcode_NULL();
+
+       
         
 
         //CHIP8 Emulator Components 
@@ -71,6 +73,12 @@ class Chip8{
         //Function Pointer Table Variables
         typedef void (Chip8::* Chip8FuncPtr)();
 
+         //These are methods for the Function pointer Table, since the main table contains sub tables. Therefore the main table has to point to functions responsible for the subtables
+        void Table0();
+        void Table8();
+        void TableE();
+        void TableF();
+        
         Chip8FuncPtr table[16]; // the main table indexed by the first nibble of the opcode
         Chip8FuncPtr table0[0xE + 1]; //subtable for opcodes starting in 0x0
         Chip8FuncPtr table8[0xE + 1]; //subtable for opcodes starting in 0x8
