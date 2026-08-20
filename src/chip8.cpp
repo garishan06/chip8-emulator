@@ -3,10 +3,7 @@
 #include <cstring>
 #include <cstdint>
 
-#define DISPLAY_WIDTH 64u
-#define DISPLAY_HEIGHT 32u
-#define FONTSET_START_ADDRESS 0x50
-#define ROM_START_ADDRESS 0x200
+
 Chip8::Chip8()
     // this is an initializer list. Its a special C++ syntax that allows u to initialize variables before the constructor runs. Instead of filling variables with garbage values and then assigning them values, this allows you to set their values immediately
      : randGen(std::chrono::system_clock::now().time_since_epoch().count()), // this is for seeding; we seed the generator with the computer's time so we dont have the same seed for every run.
@@ -141,11 +138,15 @@ void Chip8::LoadROM(const char* filename){
 
 //delete the buffer
     delete [] buff;
+    std::cout << "ROM loaded: " << size << " bytes\n";
 }
 
 void Chip8::Cycle(){
 
     opcode = memory[pc] << 8 | memory[pc+1]; // this combines the 2 halves of the instructions together.
+
+    //DEBUGGING: Printing the PC and Opcode
+    std::cout << "PC: 0x" << std::hex << pc << " Opcode: 0x" << opcode << "\n";
 
     //we have to increment the pc before we move on bcs some opcodes adjust the pc value accordingly
     pc += 2;
@@ -328,6 +329,9 @@ void Chip8::Opcode_Dxyn(){
     uint8_t Vy = (opcode & 0x00F0) >> 4;
     uint8_t n = (opcode & 0x000F); 
 
+    //DEBUGGING:
+        std::cout << "Drawing at x=" << (int)registers[Vx] << " y=" << (int)registers[Vy] << std::endl;
+
     registers[0xF] = 0;
     
     for (int row = 0; row < n; row++){
@@ -337,8 +341,8 @@ void Chip8::Opcode_Dxyn(){
             uint8_t spritePixel = spriteRow & (0x80 >> col); // we do this to look at one pixel at a time, starting from the MSB in the row going to the LSB
             
              // getting the coordinates of the current pixel, considering wraparound as well. 
-            int x = (Vx + col) % DISPLAY_WIDTH;
-            int y = (Vy + row) % DISPLAY_HEIGHT;
+            int x = (registers[Vx] + col) % DISPLAY_WIDTH;
+            int y = (registers[Vy] + row) % DISPLAY_HEIGHT;
             
             uint32_t* displayPixel = &display[y* DISPLAY_WIDTH + x];
             
@@ -348,6 +352,7 @@ void Chip8::Opcode_Dxyn(){
                     registers[0xF] = 1;
 
                 } 
+                std::cout << "Setting pixel at display[" << (y * DISPLAY_WIDTH + x) << "] x=" << x << " y=" << y << std::endl;
 
                 *displayPixel ^=0xFFFFFFFF;
             }

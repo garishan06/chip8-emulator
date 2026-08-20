@@ -4,6 +4,12 @@
 #include <cstdint>
 #include <chrono>
 #include <random> // for RNG stuff
+#include <iostream> // for debugging
+
+#define DISPLAY_WIDTH 64u
+#define DISPLAY_HEIGHT 32u
+#define FONTSET_START_ADDRESS 0x50
+#define ROM_START_ADDRESS 0x200
 class Chip8{
     public:
         Chip8();
