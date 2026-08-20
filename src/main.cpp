@@ -17,9 +17,7 @@ int main(int argc, char** argv)
 	int cycleDelay = std::stoi(argv[2]);
 	char const* romFilename = argv[3];
 
-    //Debugging:
-    std::cout << "Window: " << DISPLAY_WIDTH * videoScale << "x" << DISPLAY_HEIGHT * videoScale << std::endl;
-    std::cout << "Texture: " << DISPLAY_WIDTH << "x" << DISPLAY_HEIGHT << std::endl;
+
 
 	Platform platform("CHIP-8 Emulator", DISPLAY_WIDTH * videoScale, DISPLAY_HEIGHT * videoScale,DISPLAY_WIDTH, DISPLAY_HEIGHT);
 

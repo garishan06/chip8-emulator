@@ -4,7 +4,6 @@
 #include <cstdint>
 #include <chrono>
 #include <random> // for RNG stuff
-#include <iostream> // for debugging
 
 #define DISPLAY_WIDTH 64u
 #define DISPLAY_HEIGHT 32u
