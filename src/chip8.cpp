@@ -2,7 +2,7 @@
 #include <fstream>
 #include <cstring>
 #include <cstdint>
-
+#include <iostream>
 
 Chip8::Chip8()
     // this is an initializer list. Its a special C++ syntax that allows u to initialize variables before the constructor runs. Instead of filling variables with garbage values and then assigning them values, this allows you to set their values immediately
@@ -118,6 +118,12 @@ void Chip8::LoadROM(const char* filename){
 //Open file in binary mode
     std::ifstream file(filename, std::ios::binary);
 
+    //debugging
+    if (!file.is_open()) {
+        std::cerr << "Failed to open ROM: " << filename << std::endl;
+        return;
+    }
+
 // get the file size
     file.seekg(0, std::ios::end); // this line takes us to the end of the file
     int size = file.tellg();
@@ -125,6 +131,7 @@ void Chip8::LoadROM(const char* filename){
 //create the buffer
     char* buff = new char[size];
 
+std::cout << "ROM size: " << size << " bytes" << std::endl;
 
 //read the file to the buffer
     file.read(buff, size);
@@ -239,14 +246,14 @@ void Chip8::Opcode_8xy1(){ //SET Vx = Vx (bitwise OR) Vy
     registers[Vx] = registers[Vx] | registers[Vy];
 }
 
-void Chip8::Opcode_8xy2(){
+void Chip8::Opcode_8xy2(){ //SET Vx = Vx (bitwise AND) Vy
     uint8_t Vx = (opcode & 0x0F00) >> 8;
     uint8_t Vy = (opcode & 0x00F0) >> 4;
 
     registers[Vx] = registers[Vx] & registers[Vy];
 }
 
-void Chip8::Opcode_8xy3(){
+void Chip8::Opcode_8xy3(){ //SET Vx = Vx (bitwise XOR) Vy;
     uint8_t Vx = (opcode & 0x0F00) >> 8;
     uint8_t Vy = (opcode & 0x00F0) >> 4;
 
@@ -254,7 +261,7 @@ void Chip8::Opcode_8xy3(){
 
 }
 
-void Chip8::Opcode_8xy4(){
+void Chip8::Opcode_8xy4(){ // Vx + Vy
     uint8_t Vx = (opcode & 0x0F00) >> 8;
     uint8_t Vy = (opcode & 0x00F0) >> 4;
 
@@ -265,7 +272,7 @@ void Chip8::Opcode_8xy4(){
 
 }
 
-void Chip8::Opcode_8xy5(){
+void Chip8::Opcode_8xy5(){ // Vx = Vx-Vy
     uint8_t Vx = (opcode & 0x0F00) >> 8;
     uint8_t Vy = (opcode & 0x00F0) >> 4;
 
@@ -273,14 +280,14 @@ void Chip8::Opcode_8xy5(){
     registers[Vx] -= registers[Vy];
 }
 
-void Chip8::Opcode_8xy6(){
+void Chip8::Opcode_8xy6(){ //SHIFT bits to the right
     uint8_t Vx = (opcode & 0x0F00) >> 8;
     registers[0xF] = registers[Vx] & 0x01; // we must save the old LSB before it falls off when we shift to the right.
 
-    registers[Vx] /= 2; // a bit shift in the right direction meanns we have to divide by 2, which makes sense because a bit shifting to the right should make the resulting number smaller.
+    registers[Vx] /= 2; //a bit shift in the right direction meanns we have to divide by 2, which makes sense because a bit shifting to the right should make the resulting number smaller.
 }
 
-void Chip8::Opcode_8xy7(){
+void Chip8::Opcode_8xy7(){ //Vy - Vx
     uint8_t Vx = (opcode & 0x0F00) >> 8;
     uint8_t Vy = (opcode & 0x00F0) >> 4;
 
@@ -288,14 +295,14 @@ void Chip8::Opcode_8xy7(){
     registers[Vx] = registers[Vy] - registers[Vx];
 }
 
-void Chip8::Opcode_8xyE(){
+void Chip8::Opcode_8xyE(){ //SHIFT bits to the left
     uint8_t Vx = (opcode & 0x0F00) >> 8;
     registers[0xF] = (registers[Vx] & 0x80) >> 7;
 
     registers[Vx] = registers[Vx]  << 1; 
 }
 
-void Chip8::Opcode_9xy0(){
+void Chip8::Opcode_9xy0(){ //SKIP next instruction if Vx != Vy
     uint8_t Vx = (opcode & 0x0F00) >> 8;
     uint8_t Vy = (opcode & 0x00F0) >> 4;
 
@@ -304,15 +311,15 @@ void Chip8::Opcode_9xy0(){
     }
 }
 
-void Chip8::Opcode_Annn(){
+void Chip8::Opcode_Annn(){ //SET IR = to 0x0nnn from the opcode
     ir = opcode & 0x0FFF;
 }
 
-void Chip8::Opcode_Bnnn(){
+void Chip8::Opcode_Bnnn(){ // JUMP to location 0x0nnn
     pc = registers[0] + (opcode & 0x0FFF);
 }
 
-void Chip8::Opcode_Cxkk(){
+void Chip8::Opcode_Cxkk(){ //SET Vx = (A random byte) (bitwise AND) (byte kk)
     uint8_t byte = opcode & 0x00FF;
     uint8_t random = randByte(randGen);
     uint8_t Vx = (opcode & 0x0F00) >> 8;
@@ -321,7 +328,7 @@ void Chip8::Opcode_Cxkk(){
 
 }
 
-void Chip8::Opcode_Dxyn(){
+void Chip8::Opcode_Dxyn(){ // DRAW function
 
     uint8_t Vx = (opcode & 0x0F00) >> 8;
     uint8_t Vy = (opcode & 0x00F0) >> 4;
@@ -358,7 +365,7 @@ void Chip8::Opcode_Dxyn(){
     
 }
 
-void Chip8::Opcode_Ex9E(){
+void Chip8::Opcode_Ex9E(){ //SKIP next instruction if a key of value Vx is pressed
     uint8_t Vx = (opcode & 0x0F00) >> 8;
     uint8_t key = registers[Vx];
 
@@ -367,7 +374,7 @@ void Chip8::Opcode_Ex9E(){
     }
 }
 
-void Chip8::Opcode_EXA1(){
+void Chip8::Opcode_EXA1(){ //SKIP next instruction if a key of value Vx is not pressed
     uint8_t Vx = (opcode & 0x0F00) >> 8;
     uint8_t key = registers[Vx];
 
@@ -376,13 +383,13 @@ void Chip8::Opcode_EXA1(){
     }
 }
 
-void Chip8::Opcode_Fx07(){
+void Chip8::Opcode_Fx07(){ // Store delayTimer value in Vx
     uint8_t Vx = (opcode & 0x0F00) >> 8;
 
     registers[Vx] = delayTimer;
 }
 
-void Chip8::Opcode_Fx0A(){
+void Chip8::Opcode_Fx0A(){ // Wait for a key press and then store the value of the key in Vx
     uint8_t Vx = (opcode & 0x0F00) >> 8;
     int pressFlag = 0;
     for (int i = 0; i < 16; i++){
@@ -398,32 +405,32 @@ void Chip8::Opcode_Fx0A(){
 
 }
 
-void Chip8::Opcode_Fx15(){
+void Chip8::Opcode_Fx15(){ // Store the value of the Vx in the delayTimer
     uint8_t Vx = (opcode & 0x0F00) >> 8;
     
     delayTimer = registers[Vx];
 
 }
 
-void Chip8::Opcode_Fx18(){
+void Chip8::Opcode_Fx18(){ // Store the value of Vx into the sound timer
     uint8_t Vx = (opcode & 0x0F00) >> 8;
     soundTimer = registers[Vx];
 
 }
 
-void Chip8::Opcode_FX1E(){
+void Chip8::Opcode_FX1E(){ //increment IR by Vx
     uint8_t Vx = (opcode & 0x0F00) >> 8;
 
     ir += registers[Vx];
 }
 
-void Chip8::Opcode_Fx29(){
+void Chip8::Opcode_Fx29(){ // Set I = the location of the sprite stored in Vx
     uint8_t Vx = (opcode & 0x0F00) >> 8;
 
     ir = FONTSET_START_ADDRESS + (registers[Vx] *5);
 }
 
-void Chip8::Opcode_Fx33(){
+void Chip8::Opcode_Fx33(){ // Stores the Binary Coded Decimal representation of Vx in the index register. 100s digit in IR, 10s digit in IR+1, 1s digit in IR+2
     uint8_t Vx = (opcode & 0x0F00) >> 8;
     
     uint8_t num = registers[Vx]; // here, I chose to use a seperate variable instead of directly calling registers[Vx] to prevent changing the value of whats stored in the register.
@@ -435,7 +442,7 @@ void Chip8::Opcode_Fx33(){
     memory [ir] = num % 10;    // saving the 100s digit
 }
 
-void Chip8::Opcode_Fx55(){
+void Chip8::Opcode_Fx55(){ // Reads from registers and stores values into IR
     uint8_t Vx = (opcode & 0x0F00) >> 8;
     
     for (int y = 0; y <= Vx; y++){
@@ -443,7 +450,7 @@ void Chip8::Opcode_Fx55(){
     }
 }
 
-void Chip8::Opcode_Fx65(){
+void Chip8::Opcode_Fx65(){ // Reads from IR and stores values in the regular registers (Vx).
     uint8_t Vx = (opcode & 0x0F00) >> 8;
     
     for (int y = 0; y <= Vx; y++){
