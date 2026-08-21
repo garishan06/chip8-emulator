@@ -118,11 +118,6 @@ void Chip8::LoadROM(const char* filename){
 //Open file in binary mode
     std::ifstream file(filename, std::ios::binary);
 
-    //debugging
-    if (!file.is_open()) {
-        std::cerr << "Failed to open ROM: " << filename << std::endl;
-        return;
-    }
 
 // get the file size
     file.seekg(0, std::ios::end); // this line takes us to the end of the file
@@ -131,7 +126,6 @@ void Chip8::LoadROM(const char* filename){
 //create the buffer
     char* buff = new char[size];
 
-std::cout << "ROM size: " << size << " bytes" << std::endl;
 
 //read the file to the buffer
     file.read(buff, size);
